@@ -16,7 +16,7 @@ function add0(num) {
     }
 }
 
-routeApp.controller('MaterialCtl', function ($scope) {
+function MaterialCtl($scope) {
 
     var module = $('.module-content');
     var gridJq = module.find('.material-table');
@@ -92,10 +92,10 @@ routeApp.controller('MaterialCtl', function ($scope) {
         }
     });
 
-});
+};
 
 
-routeApp.controller('StorageCtl', function ($scope) {
+function StorageCtl($scope) {
     var module = $('.module-content');
     var gridJq = module.find('.storage-table');
 
@@ -214,9 +214,9 @@ routeApp.controller('StorageCtl', function ($scope) {
             ]
         }
     });
-});
+};
 
-routeApp.controller('StorageInOutCtl', function ($scope) {
+function StorageInOutCtl($scope) {
     var module = $('.module-content');
     var gridJq = module.find('.storageInOut-table');
 
@@ -335,9 +335,9 @@ routeApp.controller('StorageInOutCtl', function ($scope) {
             ]
         }
     });
-});
+};
 
-routeApp.controller('StorageTotalCtl', function ($scope) {
+function StorageTotalCtl($scope) {
     var module = $('.module-storage-storageTotal');
     var gridJq = module.find('.storageTotal-table');
 
@@ -482,12 +482,12 @@ routeApp.controller('StorageTotalCtl', function ($scope) {
         }
     });
     refreshMonth();
-});
-routeApp.controller('ImportCtl', function ($scope) {
+};
+
+function ImportCtl($scope) {
     var module = $('.module-storage-import')
     var log = module.find('.import-log');
     var logNum = 0;
-
     module.delegate('.btn-import', 'click', function () {
         var btn = $(this);
         var fpath = btn.prev().val();
@@ -515,7 +515,7 @@ routeApp.controller('ImportCtl', function ($scope) {
                 }
                 logTmp += '<div>' + currentTime() + " " + respTxt + '</div>';
                 logTmpNum++;
-                if(logTmpNum >= 20){
+                if (logTmpNum >= 20) {
                     log.prepend(logTmp);
                     logNum += logTmpNum;
                     logTmp = '';
@@ -532,5 +532,4 @@ routeApp.controller('ImportCtl', function ($scope) {
             }
         });
     });
-
-});
+};
