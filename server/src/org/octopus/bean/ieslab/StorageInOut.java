@@ -26,10 +26,10 @@ public class StorageInOut extends Bean {
     @J4EName("业务类型")
     private String businessType;
     @J4EName("收数量")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double inCount;
     @J4EName("发数量")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double outCount;
 
     public String getImpDate() {

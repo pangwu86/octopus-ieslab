@@ -18,22 +18,22 @@ public class Storage extends Bean {
     @J4EName("物料编码")
     private String mcode;
     @J4EName("库存总量")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double total;
     @J4EName("材料库位")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double material;
     @J4EName("维护库位")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double maintenance;
     @J4EName("返修库位")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double repair;
     @J4EName("次品库位")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double inferior;
     @J4EName("i6受控库位")
-    @ColDefine(type = ColType.FLOAT, width = 15, precision = 2)
+    @ColDefine(type = ColType.FLOAT, width = 20, precision = 2)
     private double i6;
 
     public String getMname() {
