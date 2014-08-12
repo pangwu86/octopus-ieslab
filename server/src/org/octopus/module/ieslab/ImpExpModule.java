@@ -53,7 +53,7 @@ public class ImpExpModule extends AbstractBaseModule {
                                HttpServletResponse resp,
                                HttpSession session) {
         User me = ME(session);
-        String key = me.getId() + mpath;
+        String key = me.getName() + mpath;
         synchronized (esApplySet) {
             if (esApplySet.contains(key)) {
                 log.warn("same es-request from : " + key);
@@ -98,7 +98,7 @@ public class ImpExpModule extends AbstractBaseModule {
                               HttpServletResponse resp,
                               HttpSession session) {
         User me = ME(session);
-        String key = me.getId() + spath;
+        String key = me.getName() + spath;
         synchronized (esApplySet) {
             if (esApplySet.contains(key)) {
                 log.warn("same es-request from : " + key);
@@ -222,7 +222,7 @@ public class ImpExpModule extends AbstractBaseModule {
                                final HttpServletResponse resp,
                                HttpSession session) {
         User me = ME(session);
-        String key = me.getId() + spath;
+        String key = me.getName() + spath;
         synchronized (esApplySet) {
             if (esApplySet.contains(key)) {
                 log.warn("same es-request from : " + key);

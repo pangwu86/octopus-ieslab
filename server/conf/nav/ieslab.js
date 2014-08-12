@@ -1,4 +1,16 @@
 [ {
+	url : "/testObj",
+	icon : "fa-paw",
+	name : "page.main.nav.testObj"
+}, {
+	url : "/releaseNote",
+	icon : "fa-space-shuttle",
+	name : "page.main.nav.releaseNote"
+}, {
+	url : "/issue",
+	icon : "fa-bug",
+	name : "page.main.nav.issue"
+}, {
 	url : "/me",
 	icon : "fa-meh-o",
 	name : "page.main.nav.me"
@@ -31,6 +43,10 @@
 	url : "/users",
 	icon : "fa-users",
 	name : "page.main.nav.user"
+}, {
+	url : "/domains",
+	icon : "fa-cubes",
+	name : "page.main.nav.domain"
 }, {
 	url : "/setting",
 	icon : "fa-cog",

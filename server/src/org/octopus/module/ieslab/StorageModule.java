@@ -61,6 +61,7 @@ public class StorageModule extends AbstractBaseModule {
                                    @Param("asc") boolean asc) {
         return Ajax.ok().setData(new MaterialCndMaker().queryResult(dao,
                                                                     Material.class,
+                                                                    null,
                                                                     pgnm,
                                                                     pgsz,
                                                                     orderby,
@@ -78,6 +79,7 @@ public class StorageModule extends AbstractBaseModule {
                                   @Param("endDate") String endDate) {
         return Ajax.ok().setData(new StorageCndMaker().queryResult(dao,
                                                                    Storage.class,
+                                                                   null,
                                                                    pgnm,
                                                                    pgsz,
                                                                    orderby,
@@ -385,6 +387,7 @@ public class StorageModule extends AbstractBaseModule {
                                        @Param("month") final String month) {
         return Ajax.ok().setData(new StorageTotalCndMaker().queryResult(dao,
                                                                         StorageTotal.class,
+                                                                        null,
                                                                         pgnm,
                                                                         pgsz,
                                                                         orderby,
@@ -403,6 +406,7 @@ public class StorageModule extends AbstractBaseModule {
                                        @Param("endDate") String endDate) {
         return Ajax.ok().setData(new StorageInOutCndMaker().queryResult(dao,
                                                                         StorageInOut.class,
+                                                                        null,
                                                                         pgnm,
                                                                         pgsz,
                                                                         orderby,
