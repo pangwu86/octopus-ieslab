@@ -33,7 +33,7 @@ function TestObjCtl($scope) {
 				"fieldName" : 'createTime',
 				"columnName" : '创建日期',
 				"show" : true,
-				"width" : 4	00
+				"width" : 400
 			} ]
 		}
 	});
