@@ -1,8 +1,4 @@
 [ {
-	url : "/testObj",
-	icon : "fa-paw",
-	name : "page.main.nav.testObj"
-}, {
 	url : "/releaseNote",
 	icon : "fa-space-shuttle",
 	name : "page.main.nav.releaseNote"
@@ -10,10 +6,6 @@
 	url : "/issue",
 	icon : "fa-bug",
 	name : "page.main.nav.issue"
-}, {
-	url : "/me",
-	icon : "fa-meh-o",
-	name : "page.main.nav.me"
 }, {
 	url : "/storage",
 	icon : "fa-database",
@@ -40,6 +32,19 @@
 		name : "page.main.nav.storage.dataimport"
 	} ]
 }, {
+	url : "/netdisk",
+	icon : "fa-cloud",
+	name : "page.main.nav.netdisk",
+	subNav : [ {
+		url : "/netdisk4me",
+		icon : "",
+		name : "page.main.nav.netdisk.4me"
+	}, {
+		url : "/netdisk4domain",
+		icon : "",
+		name : "page.main.nav.netdisk.4domain"
+	} ]
+}, {
 	url : "/users",
 	icon : "fa-users",
 	name : "page.main.nav.user"
@@ -47,8 +52,4 @@
 	url : "/domains",
 	icon : "fa-cubes",
 	name : "page.main.nav.domain"
-}, {
-	url : "/setting",
-	icon : "fa-cog",
-	name : "page.main.nav.setting"
 } ]

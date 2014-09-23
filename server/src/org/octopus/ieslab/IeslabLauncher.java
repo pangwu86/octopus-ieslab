@@ -1,4 +1,4 @@
-package org.octopus;
+package org.octopus.ieslab;
 
 import org.nutz.web.WebLauncher;
 

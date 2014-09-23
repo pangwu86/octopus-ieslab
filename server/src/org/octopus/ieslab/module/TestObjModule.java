@@ -1,19 +1,17 @@
-package org.octopus.module.ieslab;
+package org.octopus.ieslab.module;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.nutz.dao.QueryResult;
 import org.nutz.lang.random.R;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.Ok;
 import org.nutz.mvc.annotation.Param;
 import org.nutz.web.ajax.Ajax;
 import org.nutz.web.ajax.AjaxReturn;
-import org.octopus.bean.ieslab.TestObj;
-import org.octopus.module.AbstractBaseModule;
-import org.octopus.module.ieslab.query.TestObjCndMaker;
+import org.octopus.core.module.AbstractBaseModule;
+import org.octopus.ieslab.bean.TestObj;
 
 @At("/ieslab/test")
 @Ok("ajax")
@@ -54,20 +52,4 @@ public class TestObjModule extends AbstractBaseModule {
         return Ajax.ok();
     }
 
-    @At("/query")
-    public Object queryByGrid(@Param("kwd") String kwd,
-                              @Param("pgnm") int pgnm,
-                              @Param("pgsz") int pgsz,
-                              @Param("orderby") String orderby,
-                              @Param("asc") boolean asc) {
-        QueryResult qr = new TestObjCndMaker().queryResult(dao,
-                                                           TestObj.class,
-                                                           null,
-                                                           pgnm,
-                                                           pgsz,
-                                                           orderby,
-                                                           asc,
-                                                           kwd);
-        return qr;
-    }
 }

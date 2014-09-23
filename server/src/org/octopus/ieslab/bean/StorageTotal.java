@@ -1,9 +1,9 @@
-package org.octopus.bean.ieslab;
+package org.octopus.ieslab.bean;
 
 import org.nutz.dao.entity.annotation.ColDefine;
 import org.nutz.dao.entity.annotation.ColType;
 import org.nutz.dao.entity.annotation.Table;
-import org.octopus.bean.Bean;
+import org.octopus.core.bean.Bean;
 import org.woods.json4excel.annotation.J4EName;
 
 @Table("t_storage_total")

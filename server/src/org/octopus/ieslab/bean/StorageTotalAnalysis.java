@@ -1,7 +1,5 @@
-package org.octopus.module.ieslab.exp;
+package org.octopus.ieslab.bean;
 
-import org.octopus.bean.ieslab.Material;
-import org.octopus.bean.ieslab.StorageTotal;
 import org.woods.json4excel.annotation.J4EName;
 
 @J4EName("库存统计分析")

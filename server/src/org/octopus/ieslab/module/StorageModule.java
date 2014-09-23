@@ -1,4 +1,4 @@
-package org.octopus.module.ieslab;
+package org.octopus.ieslab.module;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,9 +17,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.dao.Cnd;
+import org.nutz.dao.QueryResult;
 import org.nutz.dao.Sqls;
 import org.nutz.dao.sql.Sql;
 import org.nutz.dao.sql.SqlCallback;
+import org.nutz.dao.util.cri.SimpleCriteria;
 import org.nutz.lang.ContinueLoop;
 import org.nutz.lang.Each;
 import org.nutz.lang.ExitLoop;
@@ -27,6 +29,7 @@ import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.LoopException;
 import org.nutz.lang.Streams;
+import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.At;
@@ -34,16 +37,15 @@ import org.nutz.mvc.annotation.Ok;
 import org.nutz.mvc.annotation.Param;
 import org.nutz.web.ajax.Ajax;
 import org.nutz.web.ajax.AjaxReturn;
-import org.octopus.bean.ieslab.Material;
-import org.octopus.bean.ieslab.Storage;
-import org.octopus.bean.ieslab.StorageInOut;
-import org.octopus.bean.ieslab.StorageTotal;
-import org.octopus.module.AbstractBaseModule;
-import org.octopus.module.ieslab.exp.StorageTotalAnalysis;
-import org.octopus.module.ieslab.query.MaterialCndMaker;
-import org.octopus.module.ieslab.query.StorageCndMaker;
-import org.octopus.module.ieslab.query.StorageInOutCndMaker;
-import org.octopus.module.ieslab.query.StorageTotalCndMaker;
+import org.nutz.web.query.CndMaker;
+import org.nutz.web.query.Query;
+import org.nutz.web.query.QueryStr;
+import org.octopus.core.module.AbstractBaseModule;
+import org.octopus.ieslab.bean.Material;
+import org.octopus.ieslab.bean.Storage;
+import org.octopus.ieslab.bean.StorageInOut;
+import org.octopus.ieslab.bean.StorageTotal;
+import org.octopus.ieslab.bean.StorageTotalAnalysis;
 import org.woods.json4excel.J4E;
 import org.woods.json4excel.J4EConf;
 
@@ -54,39 +56,43 @@ public class StorageModule extends AbstractBaseModule {
     private Log log = Logs.get();
 
     @At("/material/list")
-    public AjaxReturn listMaterial(@Param("kwd") String kwd,
-                                   @Param("pgnm") int pgnm,
-                                   @Param("pgsz") int pgsz,
-                                   @Param("orderby") String orderby,
-                                   @Param("asc") boolean asc) {
-        return Ajax.ok().setData(new MaterialCndMaker().queryResult(dao,
-                                                                    Material.class,
-                                                                    null,
-                                                                    pgnm,
-                                                                    pgsz,
-                                                                    orderby,
-                                                                    asc,
-                                                                    kwd));
+    public QueryResult listMaterial(@Param("..") Query q) {
+        q.tableSet(dao, Material.class, null);
+        QueryResult qr = CndMaker.queryResult(new QueryStr() {
+            public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
+                if (!Strings.isBlank(kwd)) {
+                    sc.where().andLike("mcode", kwd, false);
+                    sc.where().orLike("name", kwd, false);
+                    sc.where().orLike("model", kwd, false);
+                    sc.where().orLike("smanager", kwd, false);
+                    sc.where().orLike("cateL1", kwd, false);
+                    sc.where().orLike("cateL2", kwd, false);
+                    sc.where().orLike("cateL3", kwd, false);
+                }
+            }
+        }, q);
+        return qr;
     }
 
     @At("/storage/list")
-    public AjaxReturn listStorage(@Param("kwd") String kwd,
-                                  @Param("pgnm") int pgnm,
-                                  @Param("pgsz") int pgsz,
-                                  @Param("orderby") String orderby,
-                                  @Param("asc") boolean asc,
-                                  @Param("startDate") String stDate,
-                                  @Param("endDate") String endDate) {
-        return Ajax.ok().setData(new StorageCndMaker().queryResult(dao,
-                                                                   Storage.class,
-                                                                   null,
-                                                                   pgnm,
-                                                                   pgsz,
-                                                                   orderby,
-                                                                   asc,
-                                                                   kwd,
-                                                                   stDate,
-                                                                   endDate));
+    public QueryResult listStorage(@Param("..") Query q,
+                                   @Param("startDate") String stDate,
+                                   @Param("endDate") String endDate) {
+        q.tableSet(dao, Storage.class, null);
+        q.cndSet(stDate, endDate);
+        QueryResult qr = CndMaker.queryResult(new QueryStr() {
+            public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
+                if (!Strings.isBlank(kwd)) {
+                    sc.where().andLike("mcode", kwd, false);
+                    sc.where().orLike("mname", kwd, false);
+                }
+                if (otherQCnd != null && otherQCnd.length == 2) {
+                    sc.where().and("impDate", ">=", otherQCnd[0]);
+                    sc.where().and("impDate", "<=", otherQCnd[1]);
+                }
+            }
+        }, q);
+        return qr;
     }
 
     @At("/storageTotal/month")
@@ -378,40 +384,41 @@ public class StorageModule extends AbstractBaseModule {
     }
 
     @At("/storageTotal/list")
-    public AjaxReturn listStorageTotal(@Param("kwd") String kwd,
-                                       @Param("pgnm") int pgnm,
-                                       @Param("pgsz") int pgsz,
-                                       @Param("orderby") String orderby,
-                                       @Param("asc") boolean asc,
-                                       @Param("month") final String month) {
-        return Ajax.ok().setData(new StorageTotalCndMaker().queryResult(dao,
-                                                                        StorageTotal.class,
-                                                                        null,
-                                                                        pgnm,
-                                                                        pgsz,
-                                                                        orderby,
-                                                                        asc,
-                                                                        kwd,
-                                                                        month));
+    public QueryResult listStorageTotal(@Param("..") Query q, @Param("month") String month) {
+        q.tableSet(dao, StorageTotal.class, null);
+        q.cndSet(month);
+        QueryResult qr = CndMaker.queryResult(new QueryStr() {
+            public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
+                if (!Strings.isBlank(kwd)) {
+                    sc.where().andLike("mcode", kwd, false);
+                    sc.where().orLike("mname", kwd, false);
+                }
+                if (otherQCnd != null && otherQCnd.length == 1) {
+                    sc.where().andEquals("impMonth", otherQCnd[0]);
+                }
+            }
+        }, q);
+        return qr;
     }
 
     @At("/storageInOut/list")
-    public AjaxReturn listStorageInOut(@Param("kwd") String kwd,
-                                       @Param("pgnm") int pgnm,
-                                       @Param("pgsz") int pgsz,
-                                       @Param("orderby") String orderby,
-                                       @Param("asc") boolean asc,
-                                       @Param("startDate") String stDate,
-                                       @Param("endDate") String endDate) {
-        return Ajax.ok().setData(new StorageInOutCndMaker().queryResult(dao,
-                                                                        StorageInOut.class,
-                                                                        null,
-                                                                        pgnm,
-                                                                        pgsz,
-                                                                        orderby,
-                                                                        asc,
-                                                                        kwd,
-                                                                        stDate,
-                                                                        endDate));
+    public QueryResult listStorageInOut(@Param("..") Query q,
+                                        @Param("startDate") String stDate,
+                                        @Param("endDate") String endDate) {
+        q.tableSet(dao, StorageInOut.class, null);
+        q.cndSet(stDate, endDate);
+        QueryResult qr = CndMaker.queryResult(new QueryStr() {
+            public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
+                if (!Strings.isBlank(kwd)) {
+                    sc.where().andLike("mcode", kwd, false);
+                    sc.where().orLike("mname", kwd, false);
+                }
+                if (otherQCnd != null && otherQCnd.length == 2) {
+                    sc.where().and("impDate", ">=", otherQCnd[0]);
+                    sc.where().and("impDate", "<=", otherQCnd[1]);
+                }
+            }
+        }, q);
+        return qr;
     }
 }

@@ -1,4 +1,4 @@
-package org.octopus.bean.ieslab;
+package org.octopus.ieslab.bean;
 
 import java.util.Date;
 

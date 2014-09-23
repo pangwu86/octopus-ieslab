@@ -1,4 +1,4 @@
-package org.octopus.module.ieslab;
+package org.octopus.ieslab.module;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import org.nutz.lang.Each;
 import org.nutz.lang.ExitLoop;
 import org.nutz.lang.LoopException;
 import org.nutz.lang.Strings;
-import org.octopus.bean.ieslab.Material;
+import org.octopus.ieslab.bean.Material;
 
 public class IesLab {
 

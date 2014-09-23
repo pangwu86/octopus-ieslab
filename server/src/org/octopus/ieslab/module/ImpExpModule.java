@@ -1,4 +1,4 @@
-package org.octopus.module.ieslab;
+package org.octopus.ieslab.module;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,16 +19,19 @@ import org.nutz.json.Json;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.mvc.Scope;
 import org.nutz.mvc.annotation.At;
+import org.nutz.mvc.annotation.Attr;
 import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.Ok;
 import org.nutz.mvc.annotation.Param;
 import org.nutz.web.comet.Comet;
-import org.octopus.bean.core.User;
-import org.octopus.bean.ieslab.Material;
-import org.octopus.bean.ieslab.Storage;
-import org.octopus.bean.ieslab.StorageInOut;
-import org.octopus.module.AbstractBaseModule;
+import org.octopus.core.Keys;
+import org.octopus.core.bean.User;
+import org.octopus.core.module.AbstractBaseModule;
+import org.octopus.ieslab.bean.Material;
+import org.octopus.ieslab.bean.Storage;
+import org.octopus.ieslab.bean.StorageInOut;
 import org.woods.json4excel.J4E;
 import org.woods.json4excel.J4EConf;
 import org.woods.json4excel.J4EEachRow;
@@ -51,8 +54,7 @@ public class ImpExpModule extends AbstractBaseModule {
     @Ok("void")
     public void importMaterial(@Param("path") String mpath,
                                HttpServletResponse resp,
-                               HttpSession session) {
-        User me = ME(session);
+                               @Attr(scope = Scope.SESSION, value = Keys.SESSION_USER) User me) {
         String key = me.getName() + mpath;
         synchronized (esApplySet) {
             if (esApplySet.contains(key)) {
