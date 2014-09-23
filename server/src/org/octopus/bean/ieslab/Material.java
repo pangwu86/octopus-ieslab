@@ -27,6 +27,8 @@ public class Material {
     private String cateL3;
     @J4EName("库管员")
     private String smanager;
+    @J4EName("条码注册")
+    private boolean useRegister;
 
     public String getMcode() {
         return mcode;

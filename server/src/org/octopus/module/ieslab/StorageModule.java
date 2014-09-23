@@ -132,7 +132,6 @@ public class StorageModule extends AbstractBaseModule {
         for (String mc : mcodes) {
             Sql totalSql = Sqls.create("select mcode, mname, sum(inCount) as totalIn, sum(outCount) as totalOut from t_storage_inout where mcode = "
                                        + mc);
-
             totalSql.setCallback(new SqlCallback() {
                 @Override
                 public Object invoke(Connection conn, ResultSet rs, Sql sql) throws SQLException {
