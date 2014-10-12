@@ -1,8 +1,4 @@
-[ {
-	url : "/releaseNote",
-	icon : "fa-space-shuttle",
-	name : "page.main.nav.releaseNote"
-}, {
+[{
 	url : "/issue",
 	icon : "fa-bug",
 	name : "page.main.nav.issue"
@@ -32,6 +28,19 @@
 		name : "page.main.nav.storage.dataimport"
 	} ]
 }, {
+	url : "/contract",
+	icon : "fa-files-o",
+	name : "page.main.nav.contract",
+	subNav : [ {
+		url : "/contract/manage",
+		icon : "",
+		name : "page.main.nav.contract.manage"
+	}, {
+		url : "/contract/baseinfo",
+		icon : "",
+		name : "page.main.nav.contract.baseinfo"
+	}]
+}, {
 	url : "/netdisk",
 	icon : "fa-cloud",
 	name : "page.main.nav.netdisk",
@@ -44,12 +53,4 @@
 		icon : "",
 		name : "page.main.nav.netdisk.4domain"
 	} ]
-}, {
-	url : "/users",
-	icon : "fa-users",
-	name : "page.main.nav.user"
-}, {
-	url : "/domains",
-	icon : "fa-cubes",
-	name : "page.main.nav.domain"
 } ]
