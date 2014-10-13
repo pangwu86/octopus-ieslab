@@ -1,15 +1,8 @@
 package org.octopus.ieslab.module;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -25,8 +18,8 @@ import org.nutz.mvc.annotation.Attr;
 import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.Ok;
 import org.nutz.mvc.annotation.Param;
-import org.nutz.web.comet.Comet;
 import org.octopus.core.Keys;
+import org.octopus.core.bean.Document;
 import org.octopus.core.bean.User;
 import org.octopus.core.module.AbstractBaseModule;
 import org.octopus.ieslab.bean.Material;
@@ -48,36 +41,28 @@ public class ImpExpModule extends AbstractBaseModule {
         IesLab.InitMaterialMap(dao);
     }
 
-    public Set<String> esApplySet = new HashSet<String>();
+    public void addLog(HttpServletResponse resp, String log) {
+        // TODO
+    }
 
     @At("/material")
-    @Ok("void")
-    public void importMaterial(@Param("path") String mpath,
+    public void importMaterial(@Param("fid") String fid,
                                HttpServletResponse resp,
                                @Attr(scope = Scope.SESSION, value = Keys.SESSION_USER) User me) {
-        String key = me.getName() + mpath;
-        synchronized (esApplySet) {
-            if (esApplySet.contains(key)) {
-                log.warn("same es-request from : " + key);
-                return;
-            }
-            esApplySet.add(key);
-        }
-        File impFile = new File(mpath);
+        addLog(resp, Strings.dup(' ', 2048));
+        Document mfdoc = fsIO.fetch(fid);
         J4EConf j4eConf = J4EConf.from(ImpExpModule.class.getResourceAsStream("/j4e/ieslab/material.js"));
         long count = 0;
         try {
-            List<Material> mlist = J4E.fromExcel(new FileInputStream(impFile),
-                                                 Material.class,
-                                                 j4eConf);
-            log.infof("load excelFile[%s], find %d material-row", impFile.getName(), mlist.size());
-            Comet.replyByES(resp, "加载Excel文件 : " + impFile.getName());
-            Comet.replyByES(resp, "发现数据共 " + mlist.size() + " 条");
+            List<Material> mlist = J4E.fromExcel(fsIO.readBinary(mfdoc), Material.class, j4eConf);
+            log.infof("load excelFile[%s], find %d material-row", mfdoc.getName(), mlist.size());
+            addLog(resp, "加载Excel文件 : " + mfdoc.getName());
+            addLog(resp, "发现数据共 " + mlist.size() + " 条");
             for (Material ma : mlist) {
                 try {
                     dao.insert(ma);
                     count++;
-                    Comet.replyByES(resp, "导入 : " + ma.getName());
+                    addLog(resp, "导入 : " + ma.getName());
                 }
                 catch (Exception e) {
                     log.error(e);
@@ -86,46 +71,31 @@ public class ImpExpModule extends AbstractBaseModule {
             }
             log.infof("import material, success [%d] and fail [%d]", count, mlist.size() - count);
         }
-        catch (FileNotFoundException e) {
+        catch (Exception e) {
             log.error(e);
         }
         IesLab.InitMaterialMap(dao);
-        Comet.replyByES(resp, "导入完毕, 成功导入" + count + "条数据.");
-        // esApplySet.remove(key);
+        addLog(resp, "导入完毕, 成功导入" + count + "条数据.");
     }
 
     @At("/storage")
-    @Ok("void")
-    public void importStorage(@Param("path") String spath,
+    public void importStorage(@Param("fid") String dirId,
                               HttpServletResponse resp,
-                              HttpSession session) {
-        User me = ME(session);
-        String key = me.getName() + spath;
-        synchronized (esApplySet) {
-            if (esApplySet.contains(key)) {
-                log.warn("same es-request from : " + key);
-                return;
-            }
-            esApplySet.add(key);
-        }
-        File storageDir = new File(spath);
-        File[] storageFiles = storageDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".xls");
-            }
-        });
-        log.infof("storage dir : %s\nfind %d excels", storageDir, storageFiles.length);
-        Comet.replyByES(resp, "在目录" + storageDir + "中, 发现Excel文件" + storageFiles.length + "个");
-        for (File sf : storageFiles) {
+                              @Attr(scope = Scope.SESSION, value = Keys.SESSION_USER) User me) {
+        Document dirDoc = fsIO.fetch(dirId);
+        List<Document> storageFiles = fsIO.children(dirDoc, null, false);
+
+        log.infof("storage dir : %s\nfind %d excels", dirDoc.getName(), storageFiles.size());
+        addLog(resp, "在目录" + dirDoc.getName() + "中, 发现Excel文件" + storageFiles.size() + "个");
+        for (Document sf : storageFiles) {
             log.infof(" %s", sf.getName());
-            Comet.replyByES(resp, " **** " + sf.getName());
+            addLog(resp, " **** " + sf.getName());
         }
         J4EConf j4eConfForStorage = J4EConf.from(ImpExpModule.class.getResourceAsStream("/j4e/ieslab/storage.js"));
         J4EConf j4eConfForStorageInOut = J4EConf.from(ImpExpModule.class.getResourceAsStream("/j4e/ieslab/storageInOut.js"));
-        for (File sf : storageFiles) {
+        for (Document sf : storageFiles) {
             log.infof(" import storageFile : %s", sf.getName());
-            Comet.replyByES(resp, "开始导入文件 : " + sf.getName());
+            addLog(resp, "开始导入文件 : " + sf.getName());
             final String impDate = sf.getName().substring(0, 10); // yyyy.MM.dd
             j4eConfForStorage.setEachPrepare(new J4EEachRow<Storage>() {
                 @Override
@@ -149,45 +119,43 @@ public class ImpExpModule extends AbstractBaseModule {
                     }
                 }
             });
-
             // 判断一下是导入, 库存
             int icount = dao.count(Storage.class, Cnd.where("impDate", "=", impDate));
             if (icount <= 0) {
                 try {
-                    List<Storage> slist = J4E.fromExcel(new FileInputStream(sf),
+                    List<Storage> slist = J4E.fromExcel(fsIO.readBinary(sf),
                                                         Storage.class,
                                                         j4eConfForStorage);
                     dao.insert(slist);
-                    Comet.replyByES(resp, "库存信息 : " + impDate + "成功导入" + impDate + "条数据");
+                    addLog(resp, "库存信息 : " + impDate + "成功导入" + impDate + "条数据");
                 }
-                catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                catch (Exception e) {
+                    log.error(e);
                 }
             } else {
                 log.warnf("%s has imported %d storage-rows", impDate, icount);
-                Comet.replyByES(resp, "库存信息 : " + impDate + "的数据已经存在, 共" + impDate + "条");
+                addLog(resp, "库存信息 : " + impDate + "的数据已经存在, 共" + impDate + "条");
             }
 
             // 判断是否导入过, 出入库
             int iocount = dao.count(StorageInOut.class, Cnd.where("impDate", "=", impDate));
             if (iocount <= 0) {
                 try {
-                    List<StorageInOut> slist = J4E.fromExcel(new FileInputStream(sf),
+                    List<StorageInOut> slist = J4E.fromExcel(fsIO.readBinary(sf),
                                                              StorageInOut.class,
                                                              j4eConfForStorageInOut);
                     dao.insert(slist);
-                    Comet.replyByES(resp, "出入库信息 : " + impDate + "成功导入" + impDate + "条数据");
+                    addLog(resp, "出入库信息 : " + impDate + "成功导入" + impDate + "条数据");
                 }
-                catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                catch (Exception e) {
+                    log.error(e);
                 }
             } else {
                 log.warnf("%s has imported %d storageInout-rows", impDate, iocount);
-                Comet.replyByES(resp, "出入库信息 : " + impDate + "的数据已经存在, 共" + impDate + "条");
+                addLog(resp, "出入库信息 : " + impDate + "的数据已经存在, 共" + impDate + "条");
             }
         }
-        Comet.replyByES(resp, "导入完毕");
-        // esApplySet.remove(key);
+        addLog(resp, "导入完毕");
     }
 
     public static class ChkStorage2 {
@@ -218,44 +186,31 @@ public class ImpExpModule extends AbstractBaseModule {
         public Sheet sheet;
     }
 
+    // TODO 维修改完成
     @At("/storage2")
-    @Ok("void")
-    public void importStorage2(@Param("path") String spath,
+    public void importStorage2(@Param("fid") String dirId,
                                final HttpServletResponse resp,
-                               HttpSession session) {
-        User me = ME(session);
-        String key = me.getName() + spath;
-        synchronized (esApplySet) {
-            if (esApplySet.contains(key)) {
-                log.warn("same es-request from : " + key);
-                return;
-            }
-            esApplySet.add(key);
-        }
-        File storageDir = new File(spath);
-        File[] storageFiles = storageDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".xls") || name.toLowerCase().endsWith(".xlsx");
-            }
-        });
-        log.infof("storage dir : %s\nfind %d excels", storageDir, storageFiles.length);
-        Comet.replyByES(resp, "在目录" + storageDir + "中, 发现Excel文件" + storageFiles.length + "个");
-        for (File sf : storageFiles) {
+                               final @Attr(scope = Scope.SESSION, value = Keys.SESSION_USER) User me) {
+        Document dirDoc = fsIO.fetch(dirId);
+        List<Document> storageFiles = fsIO.children(dirDoc, null, false);
+
+        log.infof("storage dir : %s\nfind %d excels", dirDoc.getName(), storageFiles.size());
+        addLog(resp, "在目录" + dirDoc.getName() + "中, 发现Excel文件" + storageFiles.size() + "个");
+        for (Document sf : storageFiles) {
             log.infof(" %s", sf.getName());
-            Comet.replyByES(resp, " **** " + sf.getName());
+            addLog(resp, " **** " + sf.getName());
         }
         J4EConf j4eConfForStorage = J4EConf.from(ImpExpModule.class.getResourceAsStream("/j4e/ieslab/storage2.js"));
         J4EConf j4eConfForStorageInOut = J4EConf.from(ImpExpModule.class.getResourceAsStream("/j4e/ieslab/storageInOut.js"));
-        for (File sf : storageFiles) {
+        for (Document sf : storageFiles) {
             log.infof(" import storageFile : %s", sf.getName());
-            Comet.replyByES(resp, "开始导入文件 : " + sf.getName());
+            addLog(resp, "开始导入文件 : " + sf.getName());
             Workbook wb = null;
             try {
-                wb = J4E.loadExcel(new FileInputStream(sf));
+                wb = J4E.loadExcel(fsIO.readBinary(sf));
             }
-            catch (FileNotFoundException e1) {
-                e1.printStackTrace();
+            catch (Exception e1) {
+                log.error(e1);
                 continue;
             }
             int sheetNum = wb.getNumberOfSheets();
@@ -280,11 +235,10 @@ public class ImpExpModule extends AbstractBaseModule {
 
                         dao.insert(t);
 
-                        Comet.replyByES(resp,
-                                        String.format(" $$ 在%s, 物品%s, 库存为 %f",
-                                                      t.getImpDate(),
-                                                      t.getMname(),
-                                                      t.getTotal()));
+                        addLog(resp, String.format(" $$ 在%s, 物品%s, 库存为 %f",
+                                                   t.getImpDate(),
+                                                   t.getMname(),
+                                                   t.getTotal()));
                     }
                 });
                 j4eConfForStorageInOut.setEachPrepare(new J4EEachRow<StorageInOut>() {
@@ -296,11 +250,12 @@ public class ImpExpModule extends AbstractBaseModule {
                         if (Strings.isBlank(t.getMname())) {
                             t.setMname(IesLab.getMaterialName(t.getMcode()));
                         }
-                        Comet.replyByES(resp, String.format(" $$ 在%s, 物品%s, 入库 %f, 出库 %f",
-                                                            t.getImpDate(),
-                                                            t.getMname(),
-                                                            t.getInCount(),
-                                                            t.getOutCount()));
+                        addLog(resp,
+                               String.format(" $$ 在%s, 物品%s, 入库 %f, 出库 %f",
+                                             t.getImpDate(),
+                                             t.getMname(),
+                                             t.getInCount(),
+                                             t.getOutCount()));
                         dao.insert(t);
                     }
                 });
@@ -317,7 +272,7 @@ public class ImpExpModule extends AbstractBaseModule {
                         }
                     } else {
                         log.warnf("%s has imported %d storage-rows", cs.impDate, icount);
-                        Comet.replyByES(resp, "库存信息 : " + cs.impDate + "的数据已经存在, 共" + icount + "条");
+                        addLog(resp, "库存信息 : " + cs.impDate + "的数据已经存在, 共" + icount + "条");
                     }
                 }
 
@@ -334,17 +289,12 @@ public class ImpExpModule extends AbstractBaseModule {
                         }
                     } else {
                         log.warnf("%s has imported %d storageInout-rows", cs.impDate, iocount);
-                        Comet.replyByES(resp, "出入库信息 : "
-                                              + cs.impDate
-                                              + "的数据已经存在, 共"
-                                              + iocount
-                                              + "条");
+                        addLog(resp, "出入库信息 : " + cs.impDate + "的数据已经存在, 共" + iocount + "条");
                     }
                 }
 
             }
         }
-        Comet.replyByES(resp, "导入完毕");
-        // esApplySet.remove(key);
+        addLog(resp, "导入完毕");
     }
 }

@@ -8,17 +8,14 @@
     <div class="import-dashboard">
         <div>
             <span>${msg['import.title.material']}</span>
-            <input type="text" placeholder="${msg['import.input.file']}">
             <span class="btn-import" type="material">${msg['import.input.submit']}</span>
         </div>
         <div>
             <span>${msg['import.title.storage']}</span>
-            <input type="text" placeholder="${msg['import.input.file']}">
             <span class="btn-import" type="storage">${msg['import.input.submit']}</span>
         </div>
         <div>
             <span>${msg['import.title.storage']}-2</span>
-            <input type="text" placeholder="${msg['import.input.file']}">
             <span class="btn-import" type="storage2">${msg['import.input.submit']}</span>
         </div>
     </div>

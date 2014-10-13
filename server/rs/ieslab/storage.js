@@ -487,49 +487,96 @@ function StorageTotalCtl($scope) {
 function ImportCtl($scope) {
     var module = $('.module-storage-import')
     var log = module.find('.import-log');
+    var logTmp = '';
     var logNum = 0;
+    var logTmpNum = 0;
     module.delegate('.btn-import', 'click', function () {
         var btn = $(this);
-        var fpath = btn.prev().val();
-        if (fpath == "") {
-            alert($z.msg('import.input.file'));
-            return;
-        }
+        var itype = btn.attr('type');
         if (btn.hasClass("ing")) {
             return;
         }
         btn.addClass('ing');
         btn.html($z.msg('import.input.submit.ing'));
+        log.prepend('<div>' + currentTime() + "  " + '开始导入, 请耐心等待' + '</div>');
 
-        log.prepend('<div>' + currentTime() + "  " + $z.msg('import.input.submit.ready') + '</div>');
-
-        var logTmp = '';
-        var logTmpNum = 0;
-
-        $z.http.cometES({
-            url: "/ieslab/import/" + btn.attr('type'),
-            onChange: function (respTxt, opt) {
-                if (logNum > 1000) {
-                    log.empty();
-                    logNum = 0;
+        var fpi = null;
+        $.masker({
+            title: "选择导入文件or目录",
+            width: "90%",
+            height: "80%",
+            closeBtn: true,
+            btns: [
+                {
+                    clz: 'btn-import',
+                    label: "开始导入",
+                    event: {
+                        type: 'click',
+                        handle: function (sele) {
+                            var sfs = fpi.netdisk('seleFiles');
+                            if (sfs.length == 0) {
+                                alert('请选择后执行导入');
+                                return;
+                            }
+                            var impFile = sfs[0];
+                            $z.http.post('/ieslab/import/' + itype, {'fid': impFile.id }, function (re) {
+                                btn.removeClass('ing');
+                                btn.html($z.msg('import.input.submit'));
+                                log.prepend('<div>' + currentTime() + "  " + '开始完成' + '</div>');
+                            });
+//                            $z.http.comet({
+//                                url: '/ieslab/import/' + itype,
+//                                onChange: function (respTxt, opt) {
+//                                    if (respTxt == '') {
+//                                        return;
+//                                    }
+//                                    if (logNum > 1000) {
+//                                        log.empty();
+//                                        logNum = 0;
+//                                    }
+//                                    logTmp += '<div>' + currentTime() + " " + respTxt + '</div>';
+//                                    logTmpNum++;
+//                                    if (logTmpNum >= 20) {
+//                                        log.prepend(logTmp);
+//                                        logNum += logTmpNum;
+//                                        logTmp = '';
+//                                        logTmpNum = 0;
+//                                    }
+//                                },
+//                                onFinish: function () {
+//                                    // log.append('<div>------------------------Import Done------------------------</div>');
+//                                    logTmp += '<div>------------------------Import Done------------------------</div>';
+//                                    log.prepend(logTmp);
+//                                },
+//                                data: {
+//                                    'fid': impFile.id
+//                                }
+//                            });
+                            $.masker('close');
+                        }
+                    }
                 }
-                logTmp += '<div>' + currentTime() + " " + respTxt + '</div>';
-                logTmpNum++;
-                if (logTmpNum >= 20) {
-                    log.prepend(logTmp);
-                    logNum += logTmpNum;
-                    logTmp = '';
-                    logTmpNum = 0;
-                }
+            ],
+            body: function () {
+                var html = '';
+                html += '<div class="filepicker-import">'
+                html += '</div>'
+                return html;
             },
-            onFinish: function () {
-                // log.append('<div>------------------------Import Done------------------------</div>');
-                logTmp += '<div>------------------------Import Done------------------------</div>';
-                log.prepend(logTmp);
-            },
-            data: {
-                'path': fpath
+            afterDomReady: function (mdiv) {
+                fpi = mdiv.find('.filepicker-import');
+                fpi.netdisk({
+                    root: {
+                        module: 'domains',
+                        moduleKey: window.myConf.domain
+                    },
+                    multisel: false,
+                    mode: 'read',
+                    view: 'grid'
+                });
             }
         });
+
     });
+
 };

@@ -54,6 +54,8 @@ import org.octopus.ieslab.bean.ContractProvider;
 import org.octopus.ieslab.bean.OrderFile;
 
 @At("/ieslab/contract")
+@Ok("ajax")
+@Fail("ajax")
 @IocBean(create = "init")
 public class ContractModule extends AbstractBaseModule {
 
@@ -95,7 +97,7 @@ public class ContractModule extends AbstractBaseModule {
         String[] lines = Strings.splitIgnoreBlank(txt, "\n");
         for (String line : lines) {
             try {
-                String[] pi = Strings.splitIgnoreBlank(line, " ");
+                String[] pi = Strings.splitIgnoreBlank(line, "\\s");
                 log.infof("Add Provider : %s", Strings.join(", ", pi));
                 String fnm = pi[0];
                 String snm = pi[1];
@@ -137,6 +139,35 @@ public class ContractModule extends AbstractBaseModule {
         return Ajax.ok();
     }
 
+    @At("/baseinfo/agent/list")
+    public QueryResult listAgent(@Param("..") Query q) {
+        // TODO 稍后加上时间段过滤
+        q.tableSet(dao, ContractAgent.class, null);
+        QueryResult qr = CndMaker.queryResult(new QueryStr() {
+            public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
+                if (!Strings.isBlank(kwd)) {
+                    sc.where().andLike("name", kwd, false);
+                }
+            }
+        }, q);
+        return qr;
+    }
+
+    @At("/baseinfo/provider/list")
+    public QueryResult listProvider(@Param("..") Query q) {
+        // TODO 稍后加上时间段过滤
+        q.tableSet(dao, ContractProvider.class, null);
+        QueryResult qr = CndMaker.queryResult(new QueryStr() {
+            public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
+                if (!Strings.isBlank(kwd)) {
+                    sc.where().andLike("shortName", kwd, false);
+                    sc.where().andLike("fullName", kwd, false);
+                }
+            }
+        }, q);
+        return qr;
+    }
+
     @At("/con/list")
     public QueryResult listContract(@Param("..") Query q) {
         // TODO 稍后加上时间段过滤
@@ -144,7 +175,7 @@ public class ContractModule extends AbstractBaseModule {
         QueryResult qr = CndMaker.queryResult(new QueryStr() {
             public void analysisQueryStr(SimpleCriteria sc, String kwd, String... otherQCnd) {
                 if (!Strings.isBlank(kwd)) {
-                    sc.where().andLike("order", kwd, false);
+                    sc.where().andLike("orderNo", kwd, false);
                     sc.where().orLike("pFullName", kwd, false);
                     sc.where().orLike("pShortName", kwd, false);
                     sc.where().orLike("agent", kwd, false);
@@ -161,8 +192,6 @@ public class ContractModule extends AbstractBaseModule {
      * @return
      */
     @At("/con/check")
-    @Ok("ajax")
-    @Fail("ajax")
     public NutMap checkContract(@Param("fnm") String fnm) {
         NutMap re = new NutMap();
         OrderFile ofile = analysisFile(fnm);
@@ -186,7 +215,7 @@ public class ContractModule extends AbstractBaseModule {
         Contract con = dao.fetch(Contract.class, ofile.getOrderNo());
         if (con != null) {
             ContractFile confile = dao.fetch(ContractFile.class,
-                                             Cnd.where("order", "=", ofile.getOrderNo())
+                                             Cnd.where("orderNo", "=", ofile.getOrderNo())
                                                 .and("fname", "=", fnm));
             if (confile != null) {
                 re.setv("ok", false);
@@ -221,7 +250,7 @@ public class ContractModule extends AbstractBaseModule {
         Files.createDirIfNoExists(tarDir);
         for (String order : orders) {
             List<ContractFile> cfList = dao.query(ContractFile.class,
-                                                  Cnd.where("order", "=", order));
+                                                  Cnd.where("orderNo", "=", order));
             for (ContractFile cf : cfList) {
                 log.infof("Contract-AddContract : %s", cf.getFname());
                 File centity = Files.createFileIfNoExists(new File(tarDir, cf.getFname()));
@@ -285,7 +314,7 @@ public class ContractModule extends AbstractBaseModule {
             return null;
         }
         if (dao.count(ContractFile.class,
-                      Cnd.where("order", "=", ofile.getOrderNo()).and("fname", "=", fnm)) > 0) {
+                      Cnd.where("orderNo", "=", ofile.getOrderNo()).and("fname", "=", fnm)) > 0) {
             log.warnf("Contract Upload File Exist!, %s", fnm);
             return null;
         }
@@ -294,7 +323,12 @@ public class ContractModule extends AbstractBaseModule {
         Contract con = dao.fetch(Contract.class, ofile.getOrderNo());
         if (con == null) {
             // 根据order生成目录
-            odir = fsIO.make(module, ofile.getOrderNo(), fnm, "dir", isPrivate, me.getName());
+            odir = fsIO.make(module,
+                             ofile.getOrderNo(),
+                             ofile.getOrderNo(),
+                             "dir",
+                             isPrivate,
+                             me.getName());
 
             con = new Contract();
             con.setDirId(odir.getId());
@@ -302,7 +336,7 @@ public class ContractModule extends AbstractBaseModule {
             con.setAgent(ofile.getAgent());
             con.setpShortName(ofile.getProvider());
             con.setpFullName(providerNames.get(ofile.getProvider()));
-            con.setFileNum(1);
+            con.setFileNum(0);
             con.setCreateTime(new Date());
             dao.insert(con);
         } else {
