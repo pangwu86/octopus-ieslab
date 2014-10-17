@@ -3,6 +3,15 @@
 	icon : "fa-bug",
 	name : "page.main.nav.issue"
 }, {
+	url : "/cargo",
+	icon : "fa-truck",
+	name : "page.main.nav.cargo",
+	subNav : [ {
+		url : "/cargo/analysisArrive",
+		icon : "",
+		name : "page.main.nav.cargo.analysisArrive"
+	}]
+}, {
 	url : "/storage",
 	icon : "fa-database",
 	name : "page.main.nav.storage",
