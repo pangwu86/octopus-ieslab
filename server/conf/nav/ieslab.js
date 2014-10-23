@@ -1,7 +1,11 @@
-[{
+[ {
 	url : "/issue",
 	icon : "fa-bug",
 	name : "page.main.nav.issue"
+}, {
+	url : "/sqlserver",
+	icon : "fa-exchange",
+	name : "page.main.nav.sqlserver",
 }, {
 	url : "/cargo",
 	icon : "fa-truck",
@@ -10,7 +14,7 @@
 		url : "/cargo/analysisArrive",
 		icon : "",
 		name : "page.main.nav.cargo.analysisArrive"
-	}]
+	} ]
 }, {
 	url : "/storage",
 	icon : "fa-database",
@@ -48,7 +52,7 @@
 		url : "/contract/baseinfo",
 		icon : "",
 		name : "page.main.nav.contract.baseinfo"
-	}]
+	} ]
 }, {
 	url : "/netdisk",
 	icon : "fa-cloud",

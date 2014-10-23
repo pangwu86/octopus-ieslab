@@ -2,7 +2,6 @@
  * Created by pw on 14-10-13.
  */
 
-
 .btn-analysis {
     padding: 0 15px;
     height: 24px;
@@ -19,13 +18,18 @@
     cursor: pointer;
 }
 
-.log {
-    height: 400px;
-    border-radius: 2px;
-    margin-bottom: 12px;
-    background: #000;
-    color: #fff;
-    padding: 10px 5px;
-    overflow-x: hidden;
-    overflow-y: auto;
+.progress li {
+    margin: 15px 5px;
+    font-size: 18px;
+    opacity: 0.1;
+}
+
+.progress li.ing {
+    opacity: 0.8;
+    color: #00f;
+}
+
+.progress li.done {
+    opacity: 1;
+    color: #080;
 }

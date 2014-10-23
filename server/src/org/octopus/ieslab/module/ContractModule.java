@@ -259,7 +259,7 @@ public class ContractModule extends AbstractBaseModule {
             }
         }
         // 打包
-        File pkgFile = new File(TMP_DIR, "合同 " + Times.sDT(new Date()) + ".zip");
+        File pkgFile = new File(TMP_DIR, "合同打包_" + Times.sD(new Date()) + ".zip");
         Project prj = new Project();
         Zip zip = new Zip();
         zip.setProject(prj);

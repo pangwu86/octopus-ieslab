@@ -1,0 +1,12 @@
+/**
+ * Created by pw on 14/10/22.
+ */
+
+.ss-remark {
+    cursor: pointer;
+    color: #007AFF;
+}
+
+.ss-remark:hover {
+    text-decoration: underline;
+}

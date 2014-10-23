@@ -7,7 +7,9 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,13 +27,17 @@ import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.LoopException;
 import org.nutz.lang.Strings;
+import org.nutz.lang.Times;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.Ok;
+import org.nutz.web.ajax.Ajax;
+import org.nutz.web.ajax.AjaxReturn;
 import org.octopus.core.module.AbstractBaseModule;
 import org.octopus.ieslab.bean.CargoInfo;
+import org.octopus.ieslab.bean.SS_TrackProcess_V;
 import org.woods.json4excel.J4EColumnType;
 
 @At("/ieslab/cargo")
@@ -53,6 +59,13 @@ public class CargoModule extends AbstractBaseModule {
         return str;
     }
 
+    @At("/csv/encode/?")
+    public AjaxReturn setEncode(String encode) {
+        CSV_ENCODE = encode;
+        return Ajax.ok().setData(CSV_ENCODE);
+    }
+
+    private String CSV_ENCODE = "GB2312";
     // 全局锁
     public Object analysisLock = new Object();
     public boolean analysisArriveCargo = false;
@@ -84,7 +97,7 @@ public class CargoModule extends AbstractBaseModule {
     }
 
     @At("/analysis/todb")
-    @Ok("void")
+    @Ok("ajax")
     public void analysisArriveCargoFile() {
         dao.clear(CargoInfo.class);
         Workbook wb = null;
@@ -185,9 +198,23 @@ public class CargoModule extends AbstractBaseModule {
             @Override
             public void invoke(int index, CargoInfo ele, int length) throws ExitLoop, ContinueLoop,
                     LoopException {
-                // TODO 根据 qqd 跟 qqdNo 查询sqlserver数据库
-                sb.append(String.format("%s,%s,%s", ele.getLineContent(), "yyyy-MM-dd", "0"))
-                  .append("\r\n");
+                // 根据 qqd 跟 qqdNo 查询sqlserver数据库
+                List<SS_TrackProcess_V> reList = dao.query(SS_TrackProcess_V.class,
+                                                           Cnd.where("请购单号", "=", ele.getQgd())
+                                                              .and("请购单序号", "=", ele.getQgdNo())
+                                                              .asc("到货日"));
+                if (reList.isEmpty()) {
+                    sb.append(String.format("%s,%s,%s", ele.getLineContent(), "empty", "0"))
+                      .append("\r\n");
+                } else {
+                    for (SS_TrackProcess_V tp : reList) {
+                        sb.append(String.format("%s,%s,%s",
+                                                ele.getLineContent(),
+                                                (tp.get到货日() == null ? "nodata"
+                                                                    : Times.sD(tp.get到货日())),
+                                                String.valueOf(tp.get到货数()))).append("\r\n");
+                    }
+                }
             }
         });
         dao.each(CargoInfo.class,
@@ -196,7 +223,6 @@ public class CargoModule extends AbstractBaseModule {
                      @Override
                      public void invoke(int index, CargoInfo ele, int length) throws ExitLoop,
                              ContinueLoop, LoopException {
-                         // TODO 根据 qqd 跟 qqdNo 查询sqlserver数据库
                          sb.append(String.format("%s,%s,%s", ele.getLineContent(), "unknow", "0"))
                            .append("\r\n");
                      }
@@ -208,11 +234,12 @@ public class CargoModule extends AbstractBaseModule {
             analysisArriveCargo = false;
         }
         try {
-            String encode = new String(("到货统计分析.csv").getBytes("UTF-8"), "ISO8859-1");
+            String encode = new String(("到货统计分析_" + Times.sD(new Date()) + ".csv").getBytes("UTF-8"),
+                                       "ISO8859-1");
             resp.setHeader("Content-Disposition", "attachment; filename=" + encode);
             resp.setHeader("Content-Type", "application/vnd.ms-excel");
-            OutputStreamWriter osw = new OutputStreamWriter(resp.getOutputStream(), "UTF-8");
-            osw.write(CSV_HEAD);
+            OutputStreamWriter osw = new OutputStreamWriter(resp.getOutputStream(), CSV_ENCODE);
+            // osw.write(CSV_HEAD);
             osw.write(sb.toString());
             osw.flush();
         }

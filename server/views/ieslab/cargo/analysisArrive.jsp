@@ -8,12 +8,9 @@
         <div class="btn-analysis">开始</div>
     </div>
 
-    <div class="progress">
-
-    </div>
-
-    <div class="log">
-
-    </div>
-
+    <ul class="progress">
+        <li class="n1">上传成功</li>
+        <li class="n2">分析数据</li>
+        <li class="n3">下载成果</li>
+    </ul>
 </div>
