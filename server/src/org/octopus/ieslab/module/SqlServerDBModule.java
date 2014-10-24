@@ -89,18 +89,17 @@ public class SqlServerDBModule extends AbstractBaseModule {
         String tableName = dbTable[1];
         SS_Table st = dao.fetch(SS_Table.class,
                                 Cnd.where("dbName", "=", dbName).and("tableName", "=", tableName));
-        if (st != null) {
-            return;
+        if (st == null) {
+            st = new SS_Table();
+            st.setDbName(dbName);
+            st.setTableName(tableName);
+            st.setRemark(remark);
+            st.setStatus(0);
+            st.setDnum(0);
+            st.setInum(0);
+            st.setErrnum(0);
+            dao.insert(st);
         }
-        st = new SS_Table();
-        st.setDbName(dbName);
-        st.setTableName(tableName);
-        st.setRemark(remark);
-        st.setStatus(0);
-        st.setDnum(0);
-        st.setInum(0);
-        st.setErrnum(0);
-        dao.insert(st);
 
         // 初始化dao
         if (!daoMap.containsKey(dtName)) {

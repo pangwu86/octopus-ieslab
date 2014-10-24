@@ -204,15 +204,16 @@ public class CargoModule extends AbstractBaseModule {
                                                               .and("请购单序号", "=", ele.getQgdNo())
                                                               .asc("到货日"));
                 if (reList.isEmpty()) {
-                    sb.append(String.format("%s,%s,%s", ele.getLineContent(), "empty", "0"))
+                    sb.append(String.format("%s,%s,%s", ele.getLineContent(), "无数据", "0"))
                       .append("\r\n");
                 } else {
                     for (SS_TrackProcess_V tp : reList) {
+                        boolean isArr = tp.get到货日() != null;
                         sb.append(String.format("%s,%s,%s",
                                                 ele.getLineContent(),
-                                                (tp.get到货日() == null ? "nodata"
-                                                                    : Times.sD(tp.get到货日())),
-                                                String.valueOf(tp.get到货数()))).append("\r\n");
+                                                (isArr ? Times.sD(tp.get到货日()) : "未到货"),
+                                                (isArr ? String.valueOf(tp.get到货数())
+                                                      : tp.get采购未完成数()))).append("\r\n");
                     }
                 }
             }
@@ -223,7 +224,7 @@ public class CargoModule extends AbstractBaseModule {
                      @Override
                      public void invoke(int index, CargoInfo ele, int length) throws ExitLoop,
                              ContinueLoop, LoopException {
-                         sb.append(String.format("%s,%s,%s", ele.getLineContent(), "unknow", "0"))
+                         sb.append(String.format("%s,%s,%s", ele.getLineContent(), "无合同", "0"))
                            .append("\r\n");
                      }
                  });
